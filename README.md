@@ -2,6 +2,10 @@
 
 [Resque](https://github.com/resque/resque) compatible worker library for Rust. Inspired by [goworker](https://github.com/benmanns/goworker).
 
+## Disclaimer
+
+This doesn't work yet! Some parts of it pretend like they work, but they don't, really.
+
 ## Installation
 
 You can use `rustpkg` to install `rusque`:
