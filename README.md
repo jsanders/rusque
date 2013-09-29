@@ -21,15 +21,17 @@ extern mod rusque;
 Create a worker function:
 
 ```rust
-fn some_worker(job: &rusque.Job) -> rusque.Result {
-  rusque.Ok
+fn basic_worker(job: rusque::Job) -> rusque::Result {
+  println(fmt!("I've been asked to work on %s with args %?", job.class, job.args));
+  rusque::Ok
 }
 ```
 
 Register the worker to handle a class of jobs:
 
 ```rust
-rusque.register("SomeClass", some_worker)
+let mut rusque = rusque::new();
+rusque.register(~"basic_queue", basic_worker);
 ```
 
 Now work on jobs:
