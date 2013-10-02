@@ -48,7 +48,7 @@ This will block until an error occurs.
 
 See the whole thing in action! Run:
 
-```sh
+```
 $ cd examples/basics
 $ rustpkg install github.com/jsanders/rusque
 $ ruby basics.rb
