@@ -51,8 +51,11 @@ See the whole thing in action! Run:
 $ cd examples/basics
 $ rustpkg install github.com/jsanders/rusque
 $ ruby basics.rb
-$ rust run basics.rs
+$ rust run basics.rs &
 I've been asked to work on {"class":"Basic","args":[]}
+$ ruby basics.rb
 I've been asked to work on {"class":"Basic","args":[]}
+$ ruby basics.rb
 I've been asked to work on {"class":"Basic","args":[]}
+$ kill %1
 ```
