@@ -4,7 +4,7 @@
 
 ## Disclaimer
 
-This doesn't work yet! Some parts of it pretend like they work, but they don't, really.
+This basically works, with the caveat that a job is currently just an unparsed string of json.
 
 ## Installation
 
@@ -26,7 +26,7 @@ Create a worker function:
 
 ```rust
 fn basic_worker(job: rusque::Job) -> rusque::Result {
-  println(fmt!("I've been asked to work on %s with args %?", job.class, job.args));
+  println!("I've been asked to work on {:s}", job.job);
   rusque::Ok
 }
 ```
@@ -45,3 +45,15 @@ rusque.work()
 ```
 
 This will block until an error occurs.
+
+See the whole thing in action! Run:
+
+```sh
+$ cd examples/basics
+$ rustpkg install github.com/jsanders/rusque
+$ ruby basics.rb
+$ rust run basics.rs
+I've been asked to work on {"class":"Basic","args":[]}
+I've been asked to work on {"class":"Basic","args":[]}
+I've been asked to work on {"class":"Basic","args":[]}
+```

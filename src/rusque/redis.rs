@@ -1,3 +1,6 @@
+#[desc = "Resque workers for Rust."];
+#[license = "MIT"];
+
 use std::rt::io::{Reader, Writer};
 use std::rt::io::net::ip::{Ipv4Addr,SocketAddr};
 use std::rt::io::net::tcp::TcpStream;
@@ -19,7 +22,7 @@ impl ToUintSafe for int {
   }
 }
 
-struct Redis {
+pub struct Client {
   stream: TcpStream
 }
 
@@ -28,11 +31,11 @@ enum Reply {
   IntegerReply(int)
 }
 
-impl Redis {
-  fn connect() -> Redis {
+impl Client {
+  pub fn connect() -> Client {
     let ip_addr = Ipv4Addr(127, 0, 0, 1);
     let tcp_addr = SocketAddr { ip: ip_addr, port: 6379 };
-    Redis { stream: TcpStream::connect(tcp_addr).expect("Failed to connect to redis on 127.0.0.1:6379!") }
+    Client { stream: TcpStream::connect(tcp_addr).expect("Failed to connect to redis on 127.0.0.1:6379!") }
   }
 
   fn write_command(&mut self, args: &[&str]) {
@@ -89,7 +92,7 @@ impl Redis {
     self.read_reply()
   }
 
-  fn lpop(&mut self, key: &str) -> Option<~str> {
+  pub fn lpop(&mut self, key: &str) -> Option<~str> {
     match self.do_command(&[ &"lpop", key ]) {
       BulkReply(reply) => reply,
       _ => fail!("Protocol error: `lpop` expects bulk reply")
@@ -106,7 +109,7 @@ impl Redis {
 
 #[test]
 fn test_lpop_lpush() {
-  let mut redis = Redis::connect();
+  let mut redis = Client::connect();
   redis.lpush("some_key", "some_value");
   let popped = redis.lpop("some_key").expect("Failed to pop!");
   assert_eq!(popped, ~"some_value")

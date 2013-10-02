@@ -1,7 +1,7 @@
 extern mod rusque;
 
 fn basic_worker(job: rusque::Job) -> rusque::Result {
-  println(fmt!("I've been asked to work on %s with args %?", job.class, job.args));
+  println!("I've been asked to work on {:s}", job.job);
   rusque::Ok
 }
 

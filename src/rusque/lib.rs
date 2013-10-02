@@ -2,10 +2,12 @@
 #[license = "MIT"];
 
 use std::hashmap::HashMap;
+use std::rt::io::timer;
+
+pub mod redis;
 
 pub struct Job {
-  class: ~str,
-  args: ~[~str]
+  job: ~str,
 }
 
 pub enum Result {
@@ -23,19 +25,26 @@ pub fn new() -> Rusque {
 
 impl Rusque {
   pub fn register(&mut self, queue: ~str, worker: ~fn(Job) -> Result) {
-    println("registering...");
     let workers = self.queues.find_or_insert(queue, ~[]);
     workers.push(worker);
   }
 
   pub fn work(&self) {
-    println("working...");
-    for queue in self.queues.iter() {
-      let (queue_name, workers) = queue;
-      println(fmt!("found %u workers for %s", workers.len(), *queue_name));
-      for worker in workers.iter() {
-        (*worker)(Job { class: ~"SomeClass", args: ~[ ~"hey", ~"there" ] });
+    let mut redis = redis::Client::connect();
+    loop {
+      for queue in self.queues.iter() {
+        let (short_queue_name, workers) = queue;
+        let full_queue_name = format!("resque:queue:{:s}", *short_queue_name);
+        match redis.lpop(full_queue_name) {
+          Some(job) => {
+            for worker in workers.iter() {
+              (*worker)(Job { job: job.clone() });
+            }
+          },
+          None => ()
+        }
       }
+      timer::sleep(1000);
     }
   }
 }

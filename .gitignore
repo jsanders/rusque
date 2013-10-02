@@ -3,3 +3,4 @@ build/
 lib/
 *~
 *.dSYM
+examples/basics/basics
