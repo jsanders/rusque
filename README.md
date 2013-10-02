@@ -31,11 +31,10 @@ fn basic_worker(job: rusque::Job) -> rusque::Result {
 }
 ```
 
-Register the worker to handle a class of jobs:
+Create a worker to handle a list of queues:
 
 ```rust
-let mut rusque = rusque::new();
-rusque.register(~"basic_queue", basic_worker);
+let mut worker = rusque::Worker::new(~[~"basic_queue"], basic_worker);
 ```
 
 Now work on jobs:

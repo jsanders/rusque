@@ -6,7 +6,6 @@ fn basic_worker(job: rusque::Job) -> rusque::Result {
 }
 
 fn main() {
-  let mut rusque = rusque::new();
-  rusque.register(~"basic_queue", basic_worker);
-  rusque.work();
+  let mut client = rusque::Worker::new(~[~"basic_queue"], basic_worker);
+  client.work();
 }

@@ -1,7 +1,6 @@
 #[desc = "Resque workers for Rust."];
 #[license = "MIT"];
 
-use std::hashmap::HashMap;
 use std::rt::io::timer;
 
 pub mod redis;
@@ -15,36 +14,44 @@ pub enum Result {
   Err
 }
 
-struct Rusque {
-  queues: HashMap<~str, ~[~fn(Job) -> Result]>
+struct Worker {
+  queues: ~[~str],
+  worker: ~fn(Job) -> Result,
+  redis: redis::Client
 }
 
-pub fn new() -> Rusque {
-  Rusque { queues: HashMap::new() }
-}
-
-impl Rusque {
-  pub fn register(&mut self, queue: ~str, worker: ~fn(Job) -> Result) {
-    let workers = self.queues.find_or_insert(queue, ~[]);
-    workers.push(worker);
+impl Worker {
+  /// Take a list of queues to watch and a function to execute when a job is
+  /// received on any of those qeueus.
+  pub fn new(queues: ~[~str], worker: ~fn(Job) -> Result) -> Worker {
+    Worker {
+      queues: queues,
+      worker: worker,
+      redis: redis::Client::connect()
+    }
   }
 
-  pub fn work(&self) {
-    let mut redis = redis::Client::connect();
+  /// Look for work in watched queues every second. Block until error.
+  pub fn work(&mut self) {
     loop {
-      for queue in self.queues.iter() {
-        let (short_queue_name, workers) = queue;
-        let full_queue_name = format!("resque:queue:{:s}", *short_queue_name);
-        match redis.lpop(full_queue_name) {
-          Some(job) => {
-            for worker in workers.iter() {
-              (*worker)(Job { job: job.clone() });
-            }
-          },
-          None => ()
-        }
+      match self.reserve() {
+        Some(job) => { (self.worker)(job); },
+        None      => timer::sleep(1000)
       }
-      timer::sleep(1000);
     }
+  }
+
+  /// Return the first job found on any watched queue, or None if none available.
+  fn reserve(&mut self) -> Option<Job> {
+    for queue in self.queues.iter() {
+      let full_queue_name = format!("resque:queue:{:s}", *queue);
+      match self.redis.lpop(full_queue_name) {
+        Some(job) => {
+          return Some(Job { job: job })
+        },
+        None => continue
+      }
+    }
+    None
   }
 }
