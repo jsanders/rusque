@@ -52,10 +52,10 @@ $ cd examples/basics
 $ rustpkg install github.com/jsanders/rusque
 $ ruby basics.rb
 $ rust run basics.rs &
-I've been asked to work on {"class":"Basic","args":[]}
+I've been asked to work on Basic with args ~[~"some", ~"args"]
 $ ruby basics.rb
-I've been asked to work on {"class":"Basic","args":[]}
+I've been asked to work on Basic with args ~[~"some", ~"args"]
 $ ruby basics.rb
-I've been asked to work on {"class":"Basic","args":[]}
+I've been asked to work on Basic with args ~[~"some", ~"args"]
 $ kill %1
 ```

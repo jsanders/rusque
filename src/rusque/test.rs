@@ -5,7 +5,11 @@ fn basic_worker(job: rusque::Job) -> rusque::Result {
   rusque::Ok
 }
 
-fn main() {
+#[test]
+fn test_everything() {
   let mut client = rusque::Worker::new(~[~"basic_queue"], basic_worker);
-  client.work();
+  match client.reserve() {
+    Some(job) => { basic_worker(job); },
+    None => println!("No job!")
+  }
 }

@@ -1,12 +1,47 @@
 #[desc = "Resque workers for Rust."];
 #[license = "MIT"];
 
+extern mod extra;
+use extra::json;
+
 use std::rt::io::timer;
 
 pub mod redis;
 
 pub struct Job {
-  job: ~str,
+  class: ~str,
+  args: ~[~str]
+}
+
+impl Job {
+  fn new(json: json::Json) -> Job {
+    let format_error = "Invalid json";
+    match json {
+      json::Object(top) => {
+        let class_json = top.find(&~"class").expect(format_error);
+        let class = match *class_json {
+          json::String(ref class) => class.clone(),
+          _ => fail!(format_error)
+        };
+
+        let args_json = top.find(&~"args").expect(format_error);
+        let args = match *args_json {
+          json::List(ref args_list) => {
+            do args_list.map |arg_json| {
+              match *arg_json {
+                json::String(ref arg) => arg.clone(),
+                _ => fail!(format_error)
+              }
+            }
+          },
+          _ => fail!(format_error)
+        };
+
+        Job { class: class, args: args }
+      },
+      _ => fail!(format_error)
+    }
+  }
 }
 
 pub enum Result {
@@ -42,12 +77,13 @@ impl Worker {
   }
 
   /// Return the first job found on any watched queue, or None if none available.
-  fn reserve(&mut self) -> Option<Job> {
+  pub fn reserve(&mut self) -> Option<Job> {
     for queue in self.queues.iter() {
       let full_queue_name = format!("resque:queue:{:s}", *queue);
       match self.redis.lpop(full_queue_name) {
-        Some(job) => {
-          return Some(Job { job: job })
+        Some(job_str) => {
+          let job_json = json::from_str(job_str).unwrap();
+          return Some(Job::new(job_json))
         },
         None => continue
       }
