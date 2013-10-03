@@ -10,7 +10,7 @@ pub mod redis;
 
 pub struct Job {
   class: ~str,
-  args: ~[~str]
+  args: json::List
 }
 
 impl Job {
@@ -26,14 +26,7 @@ impl Job {
 
         let args_json = top.find(&~"args").expect(format_error);
         let args = match *args_json {
-          json::List(ref args_list) => {
-            do args_list.map |arg_json| {
-              match *arg_json {
-                json::String(ref arg) => arg.clone(),
-                _ => fail!(format_error)
-              }
-            }
-          },
+          json::List(ref args_list) => args_list.clone(),
           _ => fail!(format_error)
         };
 
